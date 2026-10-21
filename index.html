@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth" style="scroll-padding-top: 5rem;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conducción Transitoria de Calor General — Semiinfinitos y Multidimensionales</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        heat: { 100: '#ffedd5', 500: '#f97316', 700: '#c2410c', 900: '#7c2d12' },
+                        cold: { 100: '#e0f2fe', 500: '#0ea5e9', 900: '#0c4a6e' },
+                        multi: { 100: '#e0e7ff', 500: '#6366f1', 700: '#4338ca', 900: '#312e81' },
+                        accent: { 100: '#fef3c7', 500: '#f59e0b' }
+                    },
+                    fontFamily: { sans: ['Inter', 'Segoe UI', 'Roboto', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- MathJax -->
+    <script>
+      MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] }, svg: { fontCache: 'global' } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c2410c; }
+        .math-container { overflow-x: auto; padding: 1rem 0; }
+        .geometry-card:hover .geometry-icon { transform: rotate(10deg) scale(1.1); }
+        input[type=range] { accent-color: #f97316; }
+        .range-multi { accent-color: #6366f1 !important; }
+        .chip { transition: all .2s; }
+        .chip:hover { transform: translateY(-2px); }
+        details[open] .chev { transform: rotate(180deg); }
+        .chev { transition: transform .25s; }
+        .act-correct { box-shadow: 0 0 0 3px rgba(16,185,129,.35); }
+        .act-wrong { box-shadow: 0 0 0 3px rgba(239,68,68,.35); }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 antialiased selection:bg-heat-500 selection:text-white">
+
+    <!-- ======================= NAVBAR ======================= -->
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md shadow-md transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-fire-flame-curved text-heat-500 text-2xl mr-3"></i>
+                    <span class="font-bold text-xl tracking-tight text-gray-900 hidden sm:block">Termotransferencia</span>
+                    <span class="font-bold text-xl tracking-tight text-gray-900 sm:hidden">Termo</span>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-6 text-sm font-medium">
+                    <a href="#inicio" class="text-gray-600 hover:text-heat-500 transition">Inicio</a>
+                    <a href="#seccion-1" class="text-heat-700 hover:text-heat-500 transition"><i class="fa-solid fa-temperature-arrow-up mr-1"></i>Semiinfinitos</a>
+                    <a href="#seccion-2" class="text-multi-700 hover:text-multi-500 transition"><i class="fa-solid fa-cubes mr-1"></i>Multidimensionales</a>
+                    <a href="#actividad" class="px-3 py-1.5 rounded-lg bg-gray-900 text-white hover:bg-heat-600 transition"><i class="fa-solid fa-medal mr-1"></i>Actividad Final</a>
+                </div>
+
+                <div class="flex md:hidden items-center">
+                    <button id="mobile-menu-btn" class="text-gray-600 hover:text-heat-500 focus:outline-none" aria-label="Menú">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200 shadow-lg absolute w-full">
+            <div class="px-4 pt-2 pb-4 space-y-1">
+                <p class="px-3 pt-2 text-xs font-bold uppercase tracking-wider text-gray-400">General</p>
+                <a href="#inicio" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100">Inicio</a>
+                <p class="px-3 pt-2 text-xs font-bold uppercase tracking-wider text-heat-600">Sección I · Semiinfinitos</p>
+                <a href="#s-intro" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-heat-100">Introducción</a>
+                <a href="#s-ecuaciones" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-heat-100">Ecuaciones</a>
+                <a href="#s-tabla" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-heat-100">Tabla erfc</a>
+                <a href="#s-simulador" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-heat-100">Simulador</a>
+                <a href="#s-ejemplos" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-heat-100">Ejemplos</a>
+                <a href="#s-aplicaciones" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-heat-100">Aplicaciones</a>
+                <p class="px-3 pt-2 text-xs font-bold uppercase tracking-wider text-multi-600">Sección II · Multidimensionales</p>
+                <a href="#m-intro" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-multi-100">Introducción</a>
+                <a href="#m-teorema" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-multi-100">Teorema del Producto</a>
+                <a href="#m-geometrias" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-multi-100">Geometrías</a>
+                <a href="#m-simulador" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-multi-100">Simulador</a>
+                <a href="#m-ejemplo" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-multi-100">Ejemplo mejorado</a>
+                <p class="px-3 pt-2 text-xs font-bold uppercase tracking-wider text-gray-400">Cierre</p>
+                <a href="#actividad" class="block px-3 py-2 rounded-md text-base font-semibold text-white bg-gray-900 hover:bg-heat-600">Actividad Final</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ======================= PORTADA ======================= -->
+    <header id="inicio" class="relative pt-24 pb-16 md:pt-32 md:pb-24 flex items-center justify-center bg-gradient-to-br from-heat-900 via-heat-700 to-multi-900 text-white overflow-hidden shadow-xl">
+        <div class="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+            <div class="absolute w-96 h-96 bg-heat-500 rounded-full mix-blend-screen filter blur-3xl -top-20 -left-20 animate-pulse"></div>
+            <div class="absolute w-96 h-96 bg-multi-500 rounded-full mix-blend-screen filter blur-3xl bottom-10 right-10 animate-pulse" style="animation-delay: 2s;"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+            <span class="bg-white/20 text-white text-xs md:text-sm font-bold tracking-wider uppercase px-4 py-1.5 rounded-full backdrop-blur-sm shadow-sm inline-block mb-6 border border-white/30">Transferencia de Calor I · Documento interactivo</span>
+            <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 drop-shadow-lg">
+                Conducción Transitoria
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-200">de Calor General</span>
+            </h1>
+            <p class="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto font-light">
+                Dos grandes aproximaciones en un solo documento: medios <strong class="text-yellow-300">semiinfinitos</strong> (instantes iniciales) y <strong class="text-indigo-300">sistemas multidimensionales</strong> (teorema del producto).
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
+                <a href="#seccion-1" class="group bg-black/30 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-heat-700/60 hover:-translate-y-1 transition-all text-left">
+                    <i class="fa-solid fa-temperature-arrow-up text-heat-500 text-2xl mb-3 block group-hover:scale-110 transition-transform"></i>
+                    <p class="font-bold text-sm">Sección I</p>
+                    <p class="text-xs text-white/70">Sólidos semiinfinitos · erfc y flujo constante</p>
+                </a>
+                <a href="#seccion-2" class="group bg-black/30 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-multi-700/60 hover:-translate-y-1 transition-all text-left">
+                    <i class="fa-solid fa-cubes text-multi-500 text-2xl mb-3 block group-hover:scale-110 transition-transform"></i>
+                    <p class="font-bold text-sm">Sección II</p>
+                    <p class="text-xs text-white/70">Multidimensional · teorema del producto</p>
+                </a>
+                <a href="#actividad" class="group bg-black/30 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-emerald-600/60 hover:-translate-y-1 transition-all text-left">
+                    <i class="fa-solid fa-medal text-emerald-400 text-2xl mb-3 block group-hover:scale-110 transition-transform"></i>
+                    <p class="font-bold text-sm">Actividad Final</p>
+                    <p class="text-xs text-white/70">5 retos con verificación automática</p>
+                </a>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 text-sm font-medium">
+                <div class="flex items-center gap-2 bg-black/30 backdrop-blur-sm px-5 py-2 rounded-lg border border-white/10"><i class="fa-solid fa-building-columns"></i> Univ. de América</div>
+                <div class="flex items-center gap-2 bg-black/30 backdrop-blur-sm px-5 py-2 rounded-lg border border-white/10"><i class="fa-solid fa-user-tie"></i> Ph.D. Juan Sandoval</div>
+                <div class="flex items-center gap-2 bg-black/30 backdrop-blur-sm px-5 py-2 rounded-lg border border-white/10"><i class="fa-regular fa-calendar"></i> 2026</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+        <!-- ============================================================= -->
+        <!-- ============== SECCIÓN I · SEMIINFINITOS ==================== -->
+        <!-- ============================================================= -->
+        <section id="seccion-1" class="scroll-mt-20">
+            <!-- Banner sección -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-heat-900 via-heat-700 to-orange-600 text-white p-8 md:p-10 shadow-xl mb-10">
+                <i class="fa-solid fa-temperature-arrow-up absolute -right-6 -bottom-8 text-[7rem] opacity-10"></i>
+                <span class="bg-white/20 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-white/30">Sección I</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-3 mb-2">Conducción Transitoria en Sólidos Semiinfinitos</h2>
+                <p class="text-orange-100/90 max-w-3xl">Modelado matemático del comportamiento térmico durante los instantes iniciales, cuando la penetración térmica aún no alcanza el fondo del cuerpo.</p>
+                <div class="flex flex-wrap gap-2 mt-5 text-xs font-semibold">
+                    <a href="#s-intro" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">1–2. Introducción y conceptos</a>
+                    <a href="#s-ecuaciones" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">3. Ecuaciones</a>
+                    <a href="#s-tabla" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">4. Tabla erfc</a>
+                    <a href="#s-simulador" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">5. Simulador / Calculadora</a>
+                    <a href="#s-ejemplos" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">6. Ejemplos de aplicación</a>
+                    <a href="#s-aplicaciones" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">7. Aplicaciones</a>
+                </div>
+            </div>
+
+            <!-- I.1 Introducción + Conceptos -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="s-intro">
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-cold-100 flex items-center justify-center text-cold-500"><i class="fa-solid fa-cube text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-gray-900">1. Introducción</h3>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Un <strong>sólido semiinfinito</strong> es un cuerpo idealizado que posee una sola superficie plana y se extiende ininterrumpidamente hacia el infinito en todas las demás direcciones [1]. Aunque no existen objetos de dimensiones literalmente infinitas en la realidad, este modelo matemático aproxima con gran precisión el comportamiento térmico de cuerpos gruesos durante los instantes iniciales de un régimen transitorio. Se utiliza para analizar el cambio de temperatura en la región cercana a la superficie exterior.
+                    </p>
+                </section>
+
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-heat-100 flex items-center justify-center text-heat-500"><i class="fa-solid fa-lightbulb text-xl"></i></div>
+                        <h3 class="text-2xl font-bold text-gray-900">2. Conceptos básicos</h3>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed mb-4">
+                        Durante periodos cortos, la mayoría de los cuerpos macroscópicos pueden modelarse bajo este régimen porque la energía térmica no tiene el tiempo físico suficiente para penetrar a fondo, haciendo que el espesor total sea irrelevante para el análisis inicial.
+                    </p>
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                        <p class="text-sm text-blue-800">
+                            <strong>Clave:</strong> Para validar este modelo frente al espesor real de una pieza, se calcula la <em>profundidad de penetración térmica</em>. Si esta es menor que el espesor real, la aproximación es plenamente válida.
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- I.2 Ecuaciones -->
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 lg:p-12 relative overflow-hidden mt-8" id="s-ecuaciones">
+                <i class="fa-solid fa-square-root-variable absolute -right-10 -bottom-10 text-9xl text-gray-50 opacity-50 pointer-events-none"></i>
+
+                <div class="relative z-10">
+                    <h3 class="text-3xl font-bold text-gray-900 mb-8 border-b-2 border-heat-500 inline-block pb-2">3. Ecuaciones · Modelo Matemático</h3>
+
+                    <p class="text-gray-600 mb-6 text-lg">La ecuación diferencial parcial que gobierna la conducción transitoria unidimensional, sin fuentes internas de generación, es:</p>
+
+                    <div class="bg-gray-50 rounded-xl p-6 mb-8 border border-gray-200 text-center math-container shadow-inner">
+                        $$\frac{\partial^2 T}{\partial x^2}=\frac{1}{\alpha}\frac{\partial T}{\partial t}$$
+                    </div>
+
+                    <p class="text-gray-600 mb-6">Dado que el medio no está acotado, los métodos habituales como la separación de variables no funcionan. Se introduce una <strong>variable de semejanza</strong> $\eta$, la cual combina las variables espaciales y temporales:</p>
+
+                    <div class="bg-gray-50 rounded-xl p-4 mb-10 border border-gray-200 text-center math-container shadow-inner">
+                        $$\eta=\frac{x}{\sqrt{4\alpha t}}=\frac{x}{2\sqrt{\alpha t}}$$
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-gradient-to-b from-white to-orange-50 rounded-xl p-6 border border-orange-100 shadow-sm relative hover:-translate-y-1 transition-transform">
+                            <div class="absolute top-0 right-0 bg-heat-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl">CASO 1</div>
+                            <h4 class="text-xl font-bold text-heat-700 mb-4">Temperatura Constante ($T_s$)</h4>
+                            <p class="text-sm text-gray-600 mb-4">Si la superficie experimenta un cambio brusco a $T_s$, usamos la función de error complementaria ($\text{erfc}$):</p>
+                            <div class="math-container text-sm">
+                                $$\frac{T(x,t)-T_i}{T_s-T_i}=\text{erfc}\left(\frac{x}{2\sqrt{\alpha t}}\right)$$
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4 mb-2">Flujo de calor en la frontera ($\dot{q}_s$):</p>
+                            <div class="math-container text-sm">
+                                $$\dot{q}_s(t)=\frac{k(T_s-T_i)}{\sqrt{\pi\alpha t}}$$
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-b from-white to-blue-50 rounded-xl p-6 border border-blue-100 shadow-sm relative hover:-translate-y-1 transition-transform">
+                            <div class="absolute top-0 right-0 bg-cold-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl">CASO 2</div>
+                            <h4 class="text-xl font-bold text-cold-900 mb-4">Flujo Constante ($\dot{q}_s$)</h4>
+                            <p class="text-sm text-gray-600 mb-4">Si el cuerpo se somete a un suministro continuo de energía térmica en la superficie:</p>
+                            <div class="math-container text-xs sm:text-sm">
+                                $$T(x,t)-T_i=\frac{\dot{q}_s}{k}\left[\sqrt{\frac{4\alpha t}{\pi}}\exp\left(-\frac{x^2}{4\alpha t}\right)-x\cdot\text{erfc}\left(\frac{x}{2\sqrt{\alpha t}}\right)\right]$$
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4 mb-2">En la superficie ($x=0$):</p>
+                            <div class="math-container text-sm">
+                                $$T_s(t)=T_i+\frac{\dot{q}_s}{k}\sqrt{\frac{4\alpha t}{\pi}}$$
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- I.3 Tabla ERFC -->
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 lg:p-12 mt-8" id="s-tabla">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600"><i class="fa-solid fa-table text-xl"></i></div>
+                    <h3 class="text-3xl font-bold text-gray-900">4. Tabla de la Función de Error Complementaria</h3>
+                </div>
+                <p class="text-gray-600 mb-6">
+                    La función $\text{erfc}(\eta)$ es indispensable para resolver analíticamente problemas de conducción en medios semiinfinitos. A continuación se presenta una tabla de valores extraída para facilitar los cálculos de temperatura y flujo de calor.
+                </p>
+
+                <div class="overflow-x-auto max-h-[400px] border border-gray-200 rounded-lg shadow-inner relative">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm text-center">
+                        <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="px-4 py-3 font-bold text-purple-700 border-r border-gray-200">$\eta$</th>
+                                <th class="px-4 py-3 font-bold text-gray-700 border-r border-gray-200">$\text{erfc}(\eta)$</th>
+                                <th class="px-4 py-3 font-bold text-purple-700 border-r border-gray-200">$\eta$</th>
+                                <th class="px-4 py-3 font-bold text-gray-700 border-r border-gray-200">$\text{erfc}(\eta)$</th>
+                                <th class="px-4 py-3 font-bold text-purple-700 border-r border-gray-200">$\eta$</th>
+                                <th class="px-4 py-3 font-bold text-gray-700">$\text{erfc}(\eta)$</th>
+                            </tr>
+                        </thead>
+                        <tbody id="erfc-tbody" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- I.4 Simulador / Calculadora -->
+            <section class="bg-white rounded-2xl shadow-lg border-2 border-orange-50 p-8 mt-8" id="s-simulador">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-3xl font-bold text-gray-900 flex items-center gap-3"><i class="fa-solid fa-chart-line text-heat-500"></i> 5. Simulador / Calculadora</h3>
+                        <p class="text-gray-500 mt-2">Distribución $T(x,t)$ con $T_s > T_i$ (Caso 1). Ajuste tiempo, temperatura superficial y posición de interés.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btn-t10" onclick="setSemiPreset(10)" class="px-4 py-2 bg-orange-100 hover:bg-orange-200 text-heat-700 rounded-lg text-sm font-semibold transition">t = 10 min</button>
+                        <button id="btn-t60" onclick="setSemiPreset(60)" class="px-4 py-2 bg-orange-100 hover:bg-orange-200 text-heat-700 rounded-lg text-sm font-semibold transition">t = 60 min</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 w-full h-[380px] relative border border-orange-100 rounded-xl p-2">
+                        <canvas id="semiChart"></canvas>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl border border-gray-200 p-5 space-y-5">
+                        <div>
+                            <label class="flex justify-between text-sm font-semibold text-gray-700 mb-1"><span>Tiempo $t$</span><span id="semi-t-val" class="text-heat-600">10 min</span></label>
+                            <input type="range" id="semi-t" min="1" max="180" value="10" step="1" class="w-full" oninput="updateSemi()">
+                        </div>
+                        <div>
+                            <label class="flex justify-between text-sm font-semibold text-gray-700 mb-1"><span>Superficie $T_s$</span><span id="semi-ts-val" class="text-heat-600">100 °C</span></label>
+                            <input type="range" id="semi-ts" min="40" max="400" value="100" step="5" class="w-full" oninput="updateSemi()">
+                        </div>
+                        <div>
+                            <label class="flex justify-between text-sm font-semibold text-gray-700 mb-1"><span>Posición $x$</span><span id="semi-x-val" class="text-heat-600">5.0 cm</span></label>
+                            <input type="range" id="semi-x" min="0.5" max="20" value="5" step="0.5" class="w-full" oninput="updateSemi()">
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-2 text-sm">
+                            <div class="bg-white border border-orange-100 rounded-lg px-3 py-2 flex justify-between items-center">
+                                <span class="text-gray-500">Temperatura en $x$</span><span id="ro-Tx" class="font-bold text-heat-700">—</span>
+                            </div>
+                            <div class="bg-white border border-orange-100 rounded-lg px-3 py-2 flex justify-between items-center">
+                                <span class="text-gray-500">Variable $\eta(x)$</span><span id="ro-eta" class="font-bold text-gray-800 font-mono">—</span>
+                            </div>
+                            <div class="bg-white border border-orange-100 rounded-lg px-3 py-2 flex justify-between items-center">
+                                <span class="text-gray-500">Penetración 5&nbsp;%</span><span id="ro-delta" class="font-bold text-cold-900">—</span>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-400 leading-relaxed">Parámetros fijos: $\alpha = 1\times10^{-6}\,\mathrm{m^2/s}$, $T_i = 20^\circ\mathrm{C}$. Penetración 5&nbsp;%: $\delta = 2\eta_{0.05}\sqrt{\alpha t}$ con $\eta_{0.05}\approx1.386$.</p>
+                    </div>
+                </div>
+                <p class="text-xs text-center text-gray-400 mt-4">* Perfil calculado con la solución exacta de erfc (aproximación de Abramowitz &amp; Stegun, error &lt; 1.5×10⁻⁷).</p>
+            </section>
+
+            <!-- I.5 Ejemplos -->
+            <section id="s-ejemplos" class="mt-8">
+                <h3 class="text-3xl font-bold text-gray-900 mb-8 border-b-2 border-heat-500 inline-block pb-2">6. Ejemplos de Aplicación</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Ejemplo 1 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                        <div class="bg-cold-900 text-white p-4">
+                            <h4 class="text-lg font-bold flex items-center gap-2"><i class="fa-regular fa-snowflake"></i> Ejemplo 1: Tuberías en invierno</h4>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col">
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4 text-sm text-gray-700 border-l-4 border-cold-500">
+                                <strong>Enunciado:</strong> Suelo cubierto de nieve a $-10^\circ C$ por 3 meses. Suelo inicial a $15^\circ C$. $k=0.4\,\mathrm{W/m\cdot^\circ C}$, $\alpha=0.15\times10^{-6}\,\mathrm{m^2/s}$. Determine profundidad mínima para evitar que el tubo llegue a $0^\circ C$.
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-3 math-container">
+                                <p>Tiempo: $t = 90\,\mathrm{d} = 7.78\times 10^6\,\mathrm{s}$</p>
+                                <p>Evaluar distribución:</p>
+                                $$\frac{0-15}{-10-15}=0.60=\text{erfc}(\eta)$$
+                                <p>De tablas, $\eta \approx 0.36$. Despejando $x$:</p>
+                                $$x=2(0.36)\sqrt{(0.15\times10^{-6})(7.78\times 10^6)} \approx 0.78 \text{ m}$$
+                            </div>
+                            <div class="mt-auto pt-4 border-t border-gray-100">
+                                <p class="text-sm font-bold text-cold-900 bg-cold-100 px-3 py-2 rounded-md">Respuesta: Mínimo 78 cm de profundidad.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejemplo 2 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                        <div class="bg-heat-700 text-white p-4">
+                            <h4 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-sun"></i> Ejemplo 2: Bloque de Madera</h4>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col">
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4 text-sm text-gray-700 border-l-4 border-heat-500">
+                                <strong>Enunciado:</strong> Madera expuesta a radiación solar de $1250\,\mathrm{W/m^2}$. $T_i = 20^\circ C$. $k=1.26\,\mathrm{W/m\cdot^\circ C}$, $\alpha=1.1\times 10^{-5}\,\mathrm{m^2/s}$. Calcule $T_s$ tras 20 min.
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-3 math-container">
+                                <p>Límite de flujo constante en $x=0$, $t = 1200\,\mathrm{s}$:</p>
+                                $$T_s=T_i+\frac{\dot{q}_s}{k}\sqrt{\frac{4\alpha t}{\pi}}$$
+                                <p>Reemplazando:</p>
+                                $$T_s=20+\frac{1250}{1.26}\sqrt{\frac{4(1.1\times 10^{-5})(1200)}{\pi}}$$
+                            </div>
+                            <div class="mt-auto pt-4 border-t border-gray-100">
+                                <p class="text-sm font-bold text-heat-900 bg-orange-100 px-3 py-2 rounded-md">Respuesta: Superficie alcanza $\approx 149^\circ C$.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ejemplo 3 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:col-span-2 lg:col-span-1">
+                        <div class="bg-purple-700 text-white p-4">
+                            <h4 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-calculator"></i> Ejemplo 3: Uso de la tabla erfc</h4>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col">
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4 text-sm text-gray-700 border-l-4 border-purple-500">
+                                <strong>Enunciado:</strong> Un bloque ($\alpha = 1.0 \times 10^{-6} m^2/s$) a $T_i = 25^\circ C$ experimenta un cambio brusco a $T_s = 250^\circ C$. Usando la tabla, determine la temperatura a $x = 5 \text{ cm}$ después de $t = 2500 \text{ s}$.
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-3 math-container">
+                                <p>1. Calculamos la variable de semejanza $\eta$:</p>
+                                $$\eta = \frac{0.05}{2\sqrt{10^{-6} \times 2500}} = 0.50$$
+                                <p>2. Buscamos en la tabla para $\eta = 0.50$:</p>
+                                $$\text{erfc}(0.50) = 0.4795$$
+                                <p>3. Despejamos de la ecuación de temperatura constante:</p>
+                                $$\frac{T - 25}{250 - 25} = 0.4795 \implies T - 25 = 225(0.4795)$$
+                            </div>
+                            <div class="mt-auto pt-4 border-t border-gray-100">
+                                <p class="text-sm font-bold text-purple-900 bg-purple-100 px-3 py-2 rounded-md">Respuesta: $T = 132.89^\circ C$.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- I.6 Aplicaciones industriales -->
+            <section id="s-aplicaciones" class="mt-8">
+                <h3 class="text-3xl font-bold text-gray-900 mb-8 border-b-2 border-heat-500 inline-block pb-2">7. Aplicaciones Industriales</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all border border-gray-100 group">
+                        <div class="text-heat-500 text-3xl mb-4 group-hover:scale-110 transition-transform"><i class="fa-solid fa-gears"></i></div>
+                        <h4 class="font-bold text-gray-900 mb-2">Tratamiento Térmico</h4>
+                        <p class="text-sm text-gray-500">Choques térmicos en inmersión de metales para endurecimiento superficial (fases martensíticas).</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all border border-gray-100 group">
+                        <div class="text-red-500 text-3xl mb-4 group-hover:scale-110 transition-transform"><i class="fa-solid fa-burst"></i></div>
+                        <h4 class="font-bold text-gray-900 mb-2">Sistemas Láser</h4>
+                        <p class="text-sm text-gray-500">Soldadura instantánea por micro-pulsos láser en piezas termodinámicamente infinitas.</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all border border-gray-100 group">
+                        <div class="text-blue-400 text-3xl mb-4 group-hover:scale-110 transition-transform"><i class="fa-solid fa-drumstick-bite"></i></div>
+                        <h4 class="font-bold text-gray-900 mb-2">Ing. de Alimentos</h4>
+                        <p class="text-sm text-gray-500">Mitigación de "quemaduras por frío" en contacto con estanterías y pasteurización superficial.</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all border border-gray-100 group">
+                        <div class="text-emerald-500 text-3xl mb-4 group-hover:scale-110 transition-transform"><i class="fa-solid fa-city"></i></div>
+                        <h4 class="font-bold text-gray-900 mb-2">Cimentaciones</h4>
+                        <p class="text-sm text-gray-500">Desplazamiento del frente de congelación estacional en zonas árticas o permafrost profundo.</p>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- ============ SECCIÓN II · MULTIDIMENSIONALES ================ -->
+        <!-- ============================================================= -->
+        <section id="seccion-2" class="scroll-mt-20 pt-8 border-t-2 border-dashed border-gray-200">
+            <!-- Banner sección -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-multi-900 via-multi-700 to-indigo-600 text-white p-8 md:p-10 shadow-xl mb-10">
+                <i class="fa-solid fa-cubes absolute -right-6 -bottom-8 text-[7rem] opacity-10"></i>
+                <span class="bg-white/20 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-white/30">Sección II</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-3 mb-2">Conducción Transitoria Multidimensional</h2>
+                <p class="text-indigo-100/90 max-w-3xl">Resolución de problemas complejos mediante la superposición (producto) de soluciones unidimensionales básicas: pared plana, cilindro infinito y sus intersecciones.</p>
+                <div class="flex flex-wrap gap-2 mt-5 text-xs font-semibold">
+                    <a href="#m-intro" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">1. Introducción</a>
+                    <a href="#m-teorema" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">2. Ecuaciones · Teorema</a>
+                    <a href="#m-geometrias" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">3. Geometrías</a>
+                    <a href="#m-simulador" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">4. Simulador</a>
+                    <a href="#m-ejemplo" class="chip bg-white/15 hover:bg-white/30 border border-white/20 px-3 py-1.5 rounded-full">5. Ejemplo mejorado</a>
+                </div>
+            </div>
+
+            <!-- II.1 Introducción -->
+            <section id="m-intro" class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <h3 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <span class="w-10 h-10 bg-multi-100 text-multi-500 rounded-full flex items-center justify-center text-lg">1</span>
+                        El salto a las 3 dimensiones
+                    </h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        En la práctica, muchos cuerpos como bloques rectangulares o cilindros cortos presentan gradientes de temperatura en más de una dirección. Para estos casos, la temperatura es una función de varias coordenadas espaciales y del tiempo: $T(x, y, z, t)$.
+                    </p>
+                    <div class="bg-indigo-50 border-l-4 border-indigo-500 p-6 rounded-r-xl">
+                        <p class="text-sm text-indigo-900 font-medium italic">
+                            "La solución para una geometría multidimensional puede expresarse como el producto de las soluciones de geometrías unidimensionales componentes." [Cengel]
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 relative group overflow-hidden">
+                    <i class="fa-solid fa-draw-polygon absolute -right-4 -bottom-4 text-8xl text-gray-50 group-hover:text-indigo-100 transition-colors"></i>
+                    <h4 class="text-xl font-bold text-gray-900 mb-4">¿Por qué usar este método?</h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3 text-gray-600"><i class="fa-solid fa-check-circle text-emerald-500 mt-1"></i><span>Evita resolver ecuaciones diferenciales parciales complejas.</span></li>
+                        <li class="flex items-start gap-3 text-gray-600"><i class="fa-solid fa-check-circle text-emerald-500 mt-1"></i><span>Permite usar las gráficas de Heisler o soluciones de un término.</span></li>
+                        <li class="flex items-start gap-3 text-gray-600"><i class="fa-solid fa-check-circle text-emerald-500 mt-1"></i><span>Es exacto para cuerpos con temperatura inicial uniforme y condiciones de frontera constantes.</span></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- II.2 Teorema del Producto -->
+            <section id="m-teorema" class="bg-white rounded-3xl shadow-sm border border-gray-200 p-8 md:p-12 mt-8">
+                <h3 class="text-3xl font-bold text-gray-900 mb-8 border-b-2 border-multi-500 inline-block pb-2">2. Ecuaciones · Teorema del Producto</h3>
+
+                <p class="text-gray-600 mb-8">Definimos la temperatura adimensional $\theta$ para el caso general como:</p>
+
+                <div class="bg-gray-900 text-white rounded-2xl p-8 mb-10 text-center shadow-inner">
+                    <div class="math-container text-xl md:text-2xl">
+                        $$\theta(x, y, z, t) = \frac{T(x, y, z, t) - T_\infty}{T_i - T_\infty}$$
+                    </div>
+                    <div class="mt-4 text-indigo-300 font-mono text-sm uppercase tracking-widest">Fórmula maestra de superposición</div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-gray-50 rounded-2xl border border-gray-200">
+                        <h4 class="font-bold text-multi-700 mb-3 uppercase text-sm tracking-wider">Bloque rectangular (3D)</h4>
+                        <p class="text-gray-600 mb-4 text-sm">Es la intersección de 3 paredes planas infinitas de espesores $2L_1, 2L_2, 2L_3$:</p>
+                        <div class="math-container text-lg">
+                            $$\theta_{rect}(x,y,z,t) = \theta_{pared}(x,t) \cdot \theta_{pared}(y,t) \cdot \theta_{pared}(z,t)$$
+                        </div>
+                    </div>
+                    <div class="p-6 bg-gray-50 rounded-2xl border border-gray-200">
+                        <h4 class="font-bold text-multi-700 mb-3 uppercase text-sm tracking-wider">Cilindro corto (2D)</h4>
+                        <p class="text-gray-600 mb-4 text-sm">Es la intersección de un cilindro infinito de radio $r_o$ y una pared plana de espesor $2L$:</p>
+                        <div class="math-container text-lg">
+                            $$\theta_{cil\_corto}(r,z,t) = \theta_{inf\_cil}(r,t) \cdot \theta_{pared}(z,t)$$
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                        <p class="font-bold text-indigo-800 mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Aproximación de un término</p>
+                        <p class="text-indigo-900/80">$\theta^* \approx A_1 e^{-\lambda_1^2 Fo}\cdot(\text{términos espaciales})$, válida para $Fo > 0.2$.</p>
+                    </div>
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                        <p class="font-bold text-indigo-800 mb-1"><i class="fa-solid fa-ruler-combined mr-1"></i> Números adimensionales</p>
+                        <p class="text-indigo-900/80">$Bi = hL_c/k$ y $Fo = \alpha t/L_c^2$ se calculan con la misma longitud característica $L_c$ en todos los componentes.</p>
+                    </div>
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                        <p class="font-bold text-indigo-800 mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Condición de exactitud</p>
+                        <p class="text-indigo-900/80">$T_i$ uniforme y condiciones de frontera constantes (o exponencialmente decrecientes) en todas las direcciones.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- II.3 Geometrías -->
+            <section id="m-geometrias" class="mt-8">
+                <div class="text-center mb-12">
+                    <h3 class="text-3xl font-bold text-gray-900 mb-4">3. Geometrías · Visualización de intersecciones</h3>
+                    <p class="text-gray-500">Cómo se construyen los objetos multidimensionales a partir de soluciones básicas unidimensionales.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="geometry-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 transition-all hover:shadow-xl">
+                        <div class="geometry-icon w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl mb-6 transition-transform"><i class="fa-solid fa-maximize"></i></div>
+                        <h4 class="font-bold text-lg mb-2">Barra Rectangular</h4>
+                        <p class="text-gray-500 text-sm mb-4">Intersección de dos paredes planas infinitas perpendiculares.</p>
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">2 Dimensiones · $\theta_{barra}=\theta_x\cdot\theta_y$</span>
+                    </div>
+                    <div class="geometry-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 transition-all hover:shadow-xl">
+                        <div class="geometry-icon w-14 h-14 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-2xl mb-6 transition-transform"><i class="fa-solid fa-database"></i></div>
+                        <h4 class="font-bold text-lg mb-2">Cilindro Corto</h4>
+                        <p class="text-gray-500 text-sm mb-4">Intersección de un cilindro infinito y una pared plana.</p>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">2 Dimensiones · $\theta_{cc}=\theta_{cil}\cdot\theta_{pared}$</span>
+                    </div>
+                    <div class="geometry-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 transition-all hover:shadow-xl">
+                        <div class="geometry-icon w-14 h-14 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-2xl mb-6 transition-transform"><i class="fa-solid fa-cube"></i></div>
+                        <h4 class="font-bold text-lg mb-2">Bloque Sólido</h4>
+                        <p class="text-gray-500 text-sm mb-4">Intersección de tres paredes planas perpendiculares.</p>
+                        <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">3 Dimensiones · $\theta_{bloque}=\theta_x\cdot\theta_y\cdot\theta_z$</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- II.4 Simulador -->
+            <section id="m-simulador" class="bg-gray-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl mt-8">
+                <div class="flex flex-col lg:flex-row gap-12">
+                    <div class="lg:w-1/3 space-y-6">
+                        <h3 class="text-3xl font-black">4. Simulador de enfriamiento</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            Compare la temperatura adimensional en el centro de tres cuerpos con la misma longitud característica ($L = r_o = 5$ cm) y el mismo $Bi$. A más direcciones de transferencia, más rápido es el decaimiento de $\theta$.
+                        </p>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3"><div class="w-4 h-4 rounded-full bg-blue-400"></div><span class="text-xs uppercase font-bold tracking-widest text-gray-300">1D · Pared infinita &nbsp;<span id="ro-bi" class="text-blue-300 font-mono"></span></span></div>
+                            <div class="flex items-center gap-3"><div class="w-4 h-4 rounded-full bg-indigo-400"></div><span class="text-xs uppercase font-bold tracking-widest text-gray-300">2D · Cilindro corto</span></div>
+                            <div class="flex items-center gap-3"><div class="w-4 h-4 rounded-full bg-purple-400"></div><span class="text-xs uppercase font-bold tracking-widest text-gray-300">3D · Bloque (cubo)</span></div>
+                        </div>
+
+                        <div>
+                            <label class="flex justify-between text-sm font-semibold text-gray-300 mb-1"><span>Convección $h$</span><span id="multi-h-val" class="text-indigo-300">150 W/m²·K</span></label>
+                            <input type="range" id="multi-h" min="10" max="400" value="150" step="10" class="w-full range-multi" oninput="updateMulti()">
+                        </div>
+
+                        <button onclick="resetMulti()" class="w-full py-3 bg-multi-500 hover:bg-multi-600 rounded-2xl font-bold transition-all shadow-lg shadow-multi-500/20"><i class="fa-solid fa-rotate-left mr-2"></i>Reiniciar simulación</button>
+                        <p class="text-[11px] text-gray-500 leading-relaxed">Material: acero inoxidable ($k=15\,\mathrm{W/m\cdot K}$, $\alpha=3.9\times10^{-6}\,\mathrm{m^2/s}$). Solución de un término válida para $Fo>0.2$ (≈ 2 min).</p>
+                    </div>
+                    <div class="lg:w-2/3 bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 h-[420px]">
+                        <canvas id="multiChart"></canvas>
+                    </div>
+                </div>
+                <p class="text-[11px] text-gray-500 leading-relaxed mt-6 border-t border-white/10 pt-4">
+                    <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i><strong class="text-gray-400">Nota pedagógica:</strong> con dimensiones inscritas ($L = r_o$) y $Bi$ pequeños, las curvas 2D y 3D casi coinciden porque su tasa de decaimiento total $\approx 3Bi$ en ambos casos; la diferencia se hace visible a mayor $Bi$ y tiempo. En cualquier caso, ambos cuerpos multidimensionales se separan claramente —y se enfrían mucho más rápido— de la pared 1D.
+                </p>
+            </section>
+
+            <!-- II.5 Ejemplo MEJORADO -->
+            <section id="m-ejemplo" class="mt-8">
+                <h3 class="text-3xl font-bold text-gray-900 border-b-2 border-multi-500 inline-block pb-2 mb-8">5. Ejemplo de aplicación mejorado</h3>
+
+                <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200">
+                    <div class="bg-multi-700 p-8 text-white">
+                        <h4 class="text-xl font-bold mb-1"><i class="fa-solid fa-fire-flame-curved mr-2"></i>Enfriamiento de un cilindro corto de aluminio</h4>
+                        <p class="text-indigo-100 text-sm">Problema tipo examen — Teorema del producto paso a paso, con diagrama, coeficientes $\lambda_1, A_1$ y validación</p>
+                    </div>
+
+                    <div class="p-6 lg:p-10">
+                        <!-- Diagrama de intersección -->
+                        <div class="bg-gray-50 rounded-2xl border border-gray-200 p-5 mb-8">
+                            <p class="text-sm font-bold text-gray-700 mb-4 text-center uppercase tracking-wider">Representación del teorema del producto</p>
+                            <div class="flex flex-wrap items-center justify-center gap-4">
+                                <!-- Pared plana -->
+                                <div class="text-center">
+                                    <svg viewBox="0 0 150 90" class="w-40 h-24 mx-auto">
+                                        <rect x="60" y="8" width="30" height="74" fill="#c7d2fe" stroke="#4338ca" stroke-width="2"/>
+                                        <line x1="30" y1="8" x2="60" y2="8" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                        <line x1="30" y1="82" x2="60" y2="82" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                        <line x1="90" y1="8" x2="120" y2="8" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                        <line x1="90" y1="82" x2="120" y2="82" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                        <line x1="55" y1="45" x2="95" y2="45" stroke="#4338ca" stroke-width="1.5"/>
+                                        <polygon points="95,45 88,41 88,49" fill="#4338ca"/>
+                                        <polygon points="55,45 62,41 62,49" fill="#4338ca"/>
+                                        <text x="75" y="60" text-anchor="middle" font-size="12" fill="#312e81" font-weight="bold">2L</text>
+                                        <text x="75" y="14" text-anchor="middle" font-size="9" fill="#64748b">∞</text>
+                                    </svg>
+                                    <span class="text-xs font-bold text-multi-700">Pared plana (θ<sub>pared</sub>)</span>
+                                </div>
+                                <span class="text-3xl font-black text-gray-400">×</span>
+                                <!-- Cilindro infinito -->
+                                <div class="text-center">
+                                    <svg viewBox="0 0 150 90" class="w-40 h-24 mx-auto">
+                                        <rect x="15" y="27" width="110" height="36" fill="#e0e7ff" stroke="#4338ca" stroke-width="2"/>
+                                        <ellipse cx="125" cy="45" rx="10" ry="18" fill="#a5b4fc" stroke="#4338ca" stroke-width="2"/>
+                                        <line x1="125" y1="45" x2="125" y2="63" stroke="#4338ca" stroke-width="1.5"/>
+                                        <line x1="115" y1="45" x2="135" y2="45" stroke="#4338ca" stroke-width="1.5" stroke-dasharray="3 2"/>
+                                        <text x="125" y="80" text-anchor="middle" font-size="11" fill="#312e81" font-weight="bold">r₀</text>
+                                    </svg>
+                                    <span class="text-xs font-bold text-multi-700">Cilindro infinito (θ<sub>cil</sub>)</span>
+                                </div>
+                                <span class="text-3xl font-black text-gray-400">=</span>
+                                <!-- Cilindro corto -->
+                                <div class="text-center">
+                                    <svg viewBox="0 0 150 90" class="w-40 h-24 mx-auto">
+                                        <rect x="45" y="30" width="60" height="30" fill="#e0e7ff" stroke="#4338ca" stroke-width="2"/>
+                                        <ellipse cx="105" cy="45" rx="10" ry="15" fill="#a5b4fc" stroke="#4338ca" stroke-width="2"/>
+                                        <ellipse cx="45" cy="45" rx="10" ry="15" fill="#e0e7ff" stroke="#4338ca" stroke-width="2"/>
+                                        <line x1="45" y1="18" x2="105" y2="18" stroke="#4338ca" stroke-width="1.5"/>
+                                        <polygon points="105,18 98,14 98,22" fill="#4338ca"/>
+                                        <polygon points="45,18 52,14 52,22" fill="#4338ca"/>
+                                        <text x="75" y="13" text-anchor="middle" font-size="11" fill="#312e81" font-weight="bold">2L</text>
+                                        <text x="128" y="75" text-anchor="middle" font-size="11" fill="#312e81" font-weight="bold">r₀</text>
+                                    </svg>
+                                    <span class="text-xs font-bold text-indigo-600">Cilindro corto: θ = θ<sub>pared</sub> · θ<sub>cil</sub></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                            <!-- Enunciado + datos -->
+                            <div class="space-y-6">
+                                <div class="bg-gray-50 p-6 rounded-2xl border-l-4 border-multi-500">
+                                    <p class="text-gray-700 text-sm leading-relaxed">
+                                        <strong>Enunciado:</strong> Un cilindro corto de aluminio ($k=237\,\mathrm{W/m\cdot K}$, $\alpha=9.71\times10^{-5}\,\mathrm{m^2/s}$) de $10\,\mathrm{cm}$ de altura y $15\,\mathrm{cm}$ de diámetro, inicialmente a $400^\circ\mathrm{C}$, se sumerge en agua a $20^\circ\mathrm{C}$ ($h=120\,\mathrm{W/m^2\cdot K}$). Calcule la temperatura en el centro geométrico tras $15$ minutos.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h5 class="font-bold text-gray-900 mb-2">Datos y geometría</h5>
+                                    <ul class="text-sm text-gray-600 grid grid-cols-2 gap-2 bg-white border border-gray-200 rounded-xl p-4">
+                                        <li><strong>$T_i$</strong> = 400 °C</li>
+                                        <li><strong>$T_\infty$</strong> = 20 °C</li>
+                                        <li><strong>$t$</strong> = 900 s (15 min)</li>
+                                        <li><strong>$L$</strong> = 0.05 m (media altura)</li>
+                                        <li><strong>$r_o$</strong> = 0.075 m (radio)</li>
+                                        <li><strong>$h$</strong> = 120 W/m²·K</li>
+                                    </ul>
+                                </div>
+
+                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">
+                                    <strong><i class="fa-solid fa-circle-check mr-1"></i>Condiciones de validez verificadas:</strong>
+                                    $T_i$ uniforme ✓ · convección constante en todas las caras ✓ · $Fo_{pared}=35>0.2$ ✓ (solución de un término aplicable en pared y cilindro).
+                                </div>
+                            </div>
+
+                            <!-- Pasos -->
+                            <div class="bg-gray-900 text-gray-300 p-7 rounded-3xl font-mono text-[13px] leading-relaxed space-y-3">
+                                <p class="text-emerald-400">// PASO 1 · Biot y Fourier (misma t, distinta L<sub>c</sub>)</p>
+                                <p>$Bi_{pared}=\dfrac{hL}{k}=\dfrac{120(0.05)}{237}=0.0253$ &nbsp;·&nbsp; $Fo_{pared}=\dfrac{\alpha t}{L^2}=\dfrac{9.71{\times}10^{-5}(900)}{0.05^2}=34.96$</p>
+                                <p>$Bi_{cil}=\dfrac{hr_o}{k}=\dfrac{120(0.075)}{237}=0.0380$ &nbsp;·&nbsp; $Fo_{cil}=\dfrac{\alpha t}{r_o^2}=15.54$</p>
+
+                                <p class="text-emerald-400">// PASO 2 · Coeficientes de la solución de un término</p>
+                                <p>Pared: $\lambda_1\tan\lambda_1=Bi \Rightarrow \lambda_1=0.1584$, $A_1=1.0042$</p>
+                                <p>Cilindro: $\lambda_1J_1(\lambda_1)=Bi\,J_0(\lambda_1) \Rightarrow \lambda_1=0.2743$, $A_1=1.0094$</p>
+
+                                <p class="text-emerald-400">// PASO 3 · θ en el centro de cada geometría</p>
+                                <p>$\theta_{pared}=A_1e^{-\lambda_1^2Fo}=1.0042\,e^{-0.0251(34.96)}=0.418$</p>
+                                <p>$\theta_{cil}=A_1e^{-\lambda_1^2Fo}=1.0094\,e^{-0.0752(15.54)}=0.314$</p>
+
+                                <p class="text-emerald-400">// PASO 4 · Teorema del producto</p>
+                                <p>$\theta_{total}=\theta_{pared}\cdot\theta_{cil}=0.418\times0.314=0.131$</p>
+
+                                <p class="text-emerald-400">// PASO 5 · Temperatura</p>
+                                <p>$T=T_\infty+\theta_{total}(T_i-T_\infty)=20+0.131(380)$</p>
+
+                                <div class="mt-4 bg-emerald-500/20 text-emerald-400 p-3 rounded border border-emerald-500/50 text-center font-bold text-base">
+                                    Resultado: T_centro ≈ 69.8 °C
+                                </div>
+                                <p class="text-[11px] text-gray-500 leading-snug">// Nota: con $\theta$ redondeados (0.42 × 0.31) se obtiene 69.4 °C; el valor sin redondeos intermedios es 69.8 °C. ¡Evita redondear antes de tiempo!</p>
+                            </div>
+                        </div>
+
+                        <!-- Calculadora interactiva del ejemplo -->
+                        <div class="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100 p-6">
+                            <h5 class="font-bold text-gray-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-calculator text-multi-500"></i> Calculadora del ejemplo (explota el problema)</h5>
+                            <p class="text-sm text-gray-500 mb-4">Cambie $h$, $t$ o $T_\infty$ y observe cómo se actualizan $\theta_{pared}$, $\theta_{cil}$ y la temperatura central. ($L=0.05$ m, $r_o=0.075$ m, aluminio).</p>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                                        <div class="bg-white rounded-xl border border-gray-200 p-3">
+                                    <label class="text-xs font-bold text-gray-500 uppercase">h [W/m²·K]</label>
+                                    <input type="number" id="cc-h" value="120" min="1" max="5000" step="1" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-multi-400" oninput="calcShortCylinder()">
+                                </div>
+                                <div class="bg-white rounded-xl border border-gray-200 p-3">
+                                    <label class="text-xs font-bold text-gray-500 uppercase">t [min]</label>
+                                    <input type="number" id="cc-t" value="15" min="0.1" max="10000" step="0.5" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-multi-400" oninput="calcShortCylinder()">
+                                </div>
+                                <div class="bg-white rounded-xl border border-gray-200 p-3">
+                                    <label class="text-xs font-bold text-gray-500 uppercase">T∞ [°C]</label>
+                                    <input type="number" id="cc-tinf" value="20" min="-50" max="500" step="1" class="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-multi-400" oninput="calcShortCylinder()">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                                <div class="bg-white rounded-xl border border-gray-200 p-3">
+                                    <p class="text-[11px] text-gray-500 font-bold uppercase">Bi (pared / cil)</p>
+                                    <p id="cc-bi" class="font-mono font-bold text-gray-800">—</p>
+                                </div>
+                                <div class="bg-white rounded-xl border border-gray-200 p-3">
+                                    <p class="text-[11px] text-gray-500 font-bold uppercase">θ pared · θ cil</p>
+                                    <p id="cc-thetas" class="font-mono font-bold text-gray-800">—</p>
+                                </div>
+                                <div class="bg-white rounded-xl border border-gray-200 p-3">
+                                    <p class="text-[11px] text-gray-500 font-bold uppercase">θ total</p>
+                                    <p id="cc-thetat" class="font-mono font-bold text-multi-700">—</p>
+                                </div>
+                                <div class="bg-gray-900 rounded-xl p-3">
+                                    <p class="text-[11px] text-gray-400 font-bold uppercase">T centro</p>
+                                    <p id="cc-T" class="font-mono font-bold text-emerald-400 text-lg">—</p>
+                                </div>
+                            </div>
+                            <p id="cc-warn" class="text-xs mt-3 font-semibold text-amber-600 hidden"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Fo &lt; 0.2: la solución de un término pierde exactitud; use gráficas de Heisler o series completas.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- =================== ACTIVIDAD FINAL ========================= -->
+        <!-- ============================================================= -->
+        <section id="actividad" class="scroll-mt-20 pt-8 border-t-2 border-dashed border-gray-200">
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-gray-900 via-gray-800 to-heat-900 text-white p-8 md:p-10 shadow-xl mb-8">
+                <i class="fa-solid fa-medal absolute -right-4 -bottom-8 text-[7rem] opacity-10"></i>
+                <span class="bg-white/20 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-white/30">Cierre del módulo</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mt-3 mb-2">Actividad Final · Retos de Conducción Transitoria</h2>
+                <p class="text-gray-300 max-w-3xl">Resuelva los 5 retos con verificación automática (use punto o coma decimal). Cada reto cubre lo visto en la Sección I o II. Se otorga retroalimentación inmediata y pistas si lo necesita.</p>
+            </div>
+
+            <!-- Progreso -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8 sticky top-16 z-30">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-bold text-gray-700"><i class="fa-solid fa-chart-simple mr-2 text-heat-500"></i>Progreso de la actividad</p>
+                    <p class="text-sm font-bold text-gray-900"><span id="act-score">0</span> / 5 retos</p>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                    <div id="act-progress" class="h-3 rounded-full bg-gradient-to-r from-heat-500 to-emerald-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div id="act-done" class="hidden mt-4 bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800 font-semibold">
+                    <i class="fa-solid fa-trophy text-emerald-500 mr-2"></i>¡Actividad completada! Dominio demostrado de los sólidos semiinfinitos y del teorema del producto.
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- Reto 1 -->
+                <div class="act-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" data-id="a1">
+                    <div class="bg-cold-900 text-white px-6 py-4 flex items-center justify-between">
+                        <h4 class="font-bold"><i class="fa-solid fa-temperature-arrow-up mr-2"></i>Reto 1 · Semiinfinito (Ts constante)</h4>
+                        <span class="text-[10px] bg-white/20 px-2 py-1 rounded uppercase font-bold">Sección I</span>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <p class="text-sm text-gray-600 leading-relaxed">Un sólido semiinfinito con $\alpha = 1.5\times10^{-6}\,\mathrm{m^2/s}$ está a $T_i = 25^\circ\mathrm{C}$. En $t=0$ su superficie se eleva bruscamente a $T_s = 80^\circ\mathrm{C}$. Determine la temperatura a $x = 0.10\,\mathrm{m}$ después de <strong>1 hora</strong>.</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="a1-input" placeholder="Ej. 43.5" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cold-400">
+                            <span class="inline-flex items-center px-3 bg-gray-100 rounded-lg text-sm font-bold text-gray-600">°C</span>
+                            <button class="px-4 py-2 bg-cold-900 hover:bg-cold-500 text-white rounded-lg text-sm font-bold transition" onclick="checkAct('a1')">Verificar</button>
+                        </div>
+                        <div class="flex gap-2 text-xs">
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600" onclick="toggleHint('a1')">Pista</button>
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600 hidden" id="a1-sol-btn" onclick="toggleSol('a1')">Ver solución</button>
+                        </div>
+                        <p id="a1-hint" class="hidden text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3">Calcula $\eta = x/(2\sqrt{\alpha t})$, busca $\text{erfc}(\eta)$ y aplica $T = T_i + (T_s-T_i)\,\text{erfc}(\eta)$.</p>
+                        <p id="a1-sol" class="hidden text-xs bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3">$\eta = 0.680 \Rightarrow \text{erfc} = 0.336$. $T = 25 + 55(0.336) \approx 43.5^\circ\mathrm{C}$.</p>
+                        <p id="a1-fb" class="text-sm font-semibold rounded-lg p-3 hidden"></p>
+                    </div>
+                </div>
+
+                <!-- Reto 2 -->
+                <div class="act-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" data-id="a2">
+                    <div class="bg-heat-700 text-white px-6 py-4 flex items-center justify-between">
+                        <h4 class="font-bold"><i class="fa-solid fa-fire mr-2"></i>Reto 2 · Semiinfinito (flujo constante)</h4>
+                        <span class="text-[10px] bg-white/20 px-2 py-1 rounded uppercase font-bold">Sección I</span>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <p class="text-sm text-gray-600 leading-relaxed">Una superficie semiinfinita ($T_i = 20^\circ\mathrm{C}$, $k = 0.8\,\mathrm{W/m\cdot K}$, $\alpha = 1\times10^{-6}\,\mathrm{m^2/s}$) recibe un flujo uniforme constante $\dot{q}_s = 500\,\mathrm{W/m^2}$. Calcule la temperatura de la superficie tras <strong>20 minutos</strong>.</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="a2-input" placeholder="Ej. 44.4" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-heat-400">
+                            <span class="inline-flex items-center px-3 bg-gray-100 rounded-lg text-sm font-bold text-gray-600">°C</span>
+                            <button class="px-4 py-2 bg-heat-700 hover:bg-heat-500 text-white rounded-lg text-sm font-bold transition" onclick="checkAct('a2')">Verificar</button>
+                        </div>
+                        <div class="flex gap-2 text-xs">
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600" onclick="toggleHint('a2')">Pista</button>
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600 hidden" id="a2-sol-btn" onclick="toggleSol('a2')">Ver solución</button>
+                        </div>
+                        <p id="a2-hint" class="hidden text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3">Evalúa la solución del Caso 2 en $x=0$: $T_s = T_i + (\dot{q}_s/k)\sqrt{4\alpha t/\pi}$.</p>
+                        <p id="a2-sol" class="hidden text-xs bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3">$\sqrt{4(10^{-6})(1200)/\pi} = 0.0391\,\mathrm{m}$. $T_s = 20 + (500/0.8)(0.0391) \approx 44.4^\circ\mathrm{C}$.</p>
+                        <p id="a2-fb" class="text-sm font-semibold rounded-lg p-3 hidden"></p>
+                    </div>
+                </div>
+
+                <!-- Reto 3 -->
+                <div class="act-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" data-id="a3">
+                    <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
+                        <h4 class="font-bold"><i class="fa-solid fa-ruler-combined mr-2"></i>Reto 3 · Penetración térmica</h4>
+                        <span class="text-[10px] bg-white/20 px-2 py-1 rounded uppercase font-bold">Sección I</span>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <p class="text-sm text-gray-600 leading-relaxed">Calcule la profundidad de penetración térmica (criterio 5 %: $\text{erfc}(\eta)=0.05 \Rightarrow \eta = 1.386$) para $\alpha = 1.2\times10^{-6}\,\mathrm{m^2/s}$ y $t = 1\,\mathrm{h}$. ¿Es válido el modelo semiinfinito para una placa de $20\,\mathrm{cm}$? Ingrese la profundidad en <strong>cm</strong>.</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="a3-input" placeholder="Ej. 18.2" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <span class="inline-flex items-center px-3 bg-gray-100 rounded-lg text-sm font-bold text-gray-600">cm</span>
+                            <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold transition" onclick="checkAct('a3')">Verificar</button>
+                        </div>
+                        <div class="flex gap-2 text-xs">
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600" onclick="toggleHint('a3')">Pista</button>
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600 hidden" id="a3-sol-btn" onclick="toggleSol('a3')">Ver solución</button>
+                        </div>
+                        <p id="a3-hint" class="hidden text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3">$\delta = 2\eta\sqrt{\alpha t}$, con $\eta = 1.386$. Compara $\delta$ con el espesor de 20 cm.</p>
+                        <p id="a3-sol" class="hidden text-xs bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3">$\sqrt{\alpha t} = \sqrt{1.2{\times}10^{-6}(3600)} = 0.0657\,\mathrm{m}$. $\delta = 2(1.386)(0.0657) = 0.182\,\mathrm{m} = 18.2\,\mathrm{cm}$. Como $18.2 &lt; 20$ cm, el modelo <strong>sí es válido</strong> (marginalmente).</p>
+                        <p id="a3-fb" class="text-sm font-semibold rounded-lg p-3 hidden"></p>
+                    </div>
+                </div>
+
+                <!-- Reto 4 -->
+                <div class="act-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden" data-id="a4">
+                    <div class="bg-purple-700 text-white px-6 py-4 flex items-center justify-between">
+                        <h4 class="font-bold"><i class="fa-solid fa-cubes mr-2"></i>Reto 4 · Teorema del producto (3D)</h4>
+                        <span class="text-[10px] bg-white/20 px-2 py-1 rounded uppercase font-bold">Sección II</span>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <p class="text-sm text-gray-600 leading-relaxed">En el centro de un bloque rectangular, las temperaturas adimensionales de cada pared son $\theta_x = 0.60$, $\theta_y = 0.70$ y $\theta_z = 0.50$. Con $T_i = 300^\circ\mathrm{C}$ y $T_\infty = 20^\circ\mathrm{C}$, calcule la temperatura central del bloque.</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="a4-input" placeholder="Ej. 78.8" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <span class="inline-flex items-center px-3 bg-gray-100 rounded-lg text-sm font-bold text-gray-600">°C</span>
+                            <button class="px-4 py-2 bg-purple-700 hover:bg-purple-500 text-white rounded-lg text-sm font-bold transition" onclick="checkAct('a4')">Verificar</button>
+                        </div>
+                        <div class="flex gap-2 text-xs">
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600" onclick="toggleHint('a4')">Pista</button>
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600 hidden" id="a4-sol-btn" onclick="toggleSol('a4')">Ver solución</button>
+                        </div>
+                        <p id="a4-hint" class="hidden text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3">Primero multiplica las tres $\theta$; después usa $T = T_\infty + \theta_{total}(T_i - T_\infty)$.</p>
+                        <p id="a4-sol" class="hidden text-xs bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3">$\theta_{total} = 0.60 \times 0.70 \times 0.50 = 0.21$. $T = 20 + 0.21(300-20) = 78.8^\circ\mathrm{C}$.</p>
+                        <p id="a4-fb" class="text-sm font-semibold rounded-lg p-3 hidden"></p>
+                    </div>
+                </div>
+
+                <!-- Reto 5 (conceptual) -->
+                <div class="act-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden lg:col-span-2" data-id="a5">
+                    <div class="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
+                        <h4 class="font-bold"><i class="fa-solid fa-brain mr-2"></i>Reto 5 · Comprensión conceptual</h4>
+                        <span class="text-[10px] bg-white/20 px-2 py-1 rounded uppercase font-bold">Sección II</span>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <p class="text-sm text-gray-600 leading-relaxed">¿Cuál afirmación sobre el <strong>Teorema del Producto</strong> es correcta?</p>
+                        <div id="a5-options" class="space-y-2 text-sm">
+                            <label class="flex items-start gap-3 border border-gray-200 rounded-xl p-3 cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="a5" value="0" class="mt-1">
+                                <span>a) Solo es exacto cuando el régimen ya es estacionario ($Fo \to \infty$).</span>
+                            </label>
+                            <label class="flex items-start gap-3 border border-gray-200 rounded-xl p-3 cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="a5" value="1" class="mt-1">
+                                <span>b) Es exacto si la temperatura inicial es uniforme y las condiciones de frontera son constantes (o del mismo tipo) en todas las direcciones.</span>
+                            </label>
+                            <label class="flex items-start gap-3 border border-gray-200 rounded-xl p-3 cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="a5" value="2" class="mt-1">
+                                <span>c) Requiere necesariamente que $Fo &lt; 0.2$ en cada dirección.</span>
+                            </label>
+                        </div>
+                        <div class="flex gap-2 text-xs">
+                            <button class="px-4 py-2 bg-emerald-700 hover:bg-emerald-500 text-white rounded-lg text-sm font-bold transition" onclick="checkAct('a5')">Verificar</button>
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600" onclick="toggleHint('a5')">Pista</button>
+                            <button class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-semibold text-gray-600 hidden" id="a5-sol-btn" onclick="toggleSol('a5')">Ver solución</button>
+                        </div>
+                        <p id="a5-hint" class="hidden text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3">Recuerda las hipótesis bajo las cuales la separación de variables produce un producto de soluciones independientes.</p>
+                        <p id="a5-sol" class="hidden text-xs bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3">Respuesta <strong>b)</strong>: el método es exacto con $T_i$ uniforme y fronteras constantes (o exponenciales iguales) en todas las direcciones; no requiere régimen estacionario ni $Fo&lt;0.2$ (eso solo afecta a la aproximación de un término).</p>
+                        <p id="a5-fb" class="text-sm font-semibold rounded-lg p-3 hidden"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Retos extra (ejercicios propuestos) -->
+            <div class="bg-gray-100 rounded-2xl p-8 mt-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+                    <i class="fa-solid fa-pencil text-gray-500"></i> Retos extra (opcional, para profundizar)
+                </h3>
+                <p class="text-sm text-gray-500 mb-6">Ejercicios de desarrollo que complementan la actividad; resuélvalos en su cuaderno.</p>
+                <div class="space-y-4 text-gray-700 text-sm">
+                    <details class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer">
+                        <summary class="font-bold outline-none flex justify-between items-center">
+                            Extra 1: Enfriamiento de bloque metálico con convección (semiinfinito con Bi)
+                            <svg class="w-5 h-5 transition-transform chev text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </summary>
+                        <p class="mt-4 pt-4 border-t border-gray-100">Considere un bloque de acero muy grueso inicialmente a $300^\circ C$. Se expone a convección con aire a $20^\circ C$ ($h=150 W/m^2\cdot^\circ C$). Evalúe si califica como sólido semiinfinito tras 30 s (compare $\delta \approx 3\sqrt{\alpha t}$ con el espesor) y prediga la temperatura a $5 \text{ cm}$ de la superficie usando la solución con convección (función de error complementaria modificada o gráfica de $Bi$ y $\eta$).</p>
+                    </details>
+                    <details class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer">
+                        <summary class="font-bold outline-none flex justify-between items-center">
+                            Extra 2: Temperatura de contacto bimaterial
+                            <svg class="w-5 h-5 transition-transform chev text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </summary>
+                        <p class="mt-4 pt-4 border-t border-gray-100">Analice el instante de encuentro táctil. Carne humana ($T=35^\circ C$, $\sqrt{k\rho C_p} = 1.1$) contacta Aluminio ($T=15^\circ C$, $\sqrt{k\rho C_p} = 24$). Formule el balance de energías en la interfaz y determine la temperatura de contacto inicial estática: $T_c = \dfrac{\sqrt{k\rho c_p}_1 T_1 + \sqrt{k\rho c_p}_2 T_2}{\sqrt{k\rho c_p}_1 + \sqrt{k\rho c_p}_2}$.</p>
+                    </details>
+                    <details class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer">
+                        <summary class="font-bold outline-none flex justify-between items-center">
+                            Extra 3: Del ejemplo del cilindro corto a un bloque de hierro
+                            <svg class="w-5 h-5 transition-transform chev text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </summary>
+                        <p class="mt-4 pt-4 border-t border-gray-100">Repita el ejemplo del cilindro corto de aluminio pero para un bloque rectangular de hierro ($k \approx 80\,W/m\cdot K$, $\alpha \approx 2\times10^{-5}\,m^2/s$) de $6\times6\times10$ cm, $T_i = 300^\circ C$, $h = 200\,W/m^2\cdot K$, $T_\infty = 25^\circ C$, $t = 10$ min. Use la calculadora del ejemplo como verificación y compare el resultado con la aproximación de un término hecha a mano.</p>
+                    </details>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ======================= FOOTER ======================= -->
+    <footer class="bg-gray-900 text-white py-12 text-sm text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex justify-center gap-6 mb-6">
+                <i class="fa-solid fa-temperature-arrow-up text-2xl text-heat-500"></i>
+                <i class="fa-solid fa-cubes text-2xl text-multi-500"></i>
+                <i class="fa-solid fa-medal text-2xl text-emerald-400"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-4 text-gray-400">Bibliografía</h3>
+            <ul class="text-gray-500 space-y-2 mb-8 list-none">
+                <li>[1] Cengel, Y. A. (2007). <em>Transferencia de calor y masa: un enfoque práctico</em>. McGraw-Hill. (Cap. 4: Conducción transitoria — sólidos semiinfinitos y sistemas multidimensionales).</li>
+                <li>[2] Fernández Díez, P. <em>Ingeniería Térmica</em>. Universidad de Cantabria.</li>
+                <li>[3] Abramowitz, M. &amp; Stegun, I. A. (1964). <em>Handbook of Mathematical Functions</em> — fórmula 7.1.26 para $\text{erfc}(x)$.</li>
+            </ul>
+            <p class="text-gray-600 border-t border-gray-800 pt-6">
+                © 2026 Universidad de América - Cátedra de Termodinámica. Documento interactivo integrado: semiinfinitos + multidimensionales.
+            </p>
+        </div>
+    </footer>
+
+    <button id="btn-top" class="fixed bottom-6 right-6 bg-heat-500 hover:bg-heat-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-xl opacity-0 invisible transition-all duration-300 z-50 transform hover:-translate-y-1" aria-label="Volver arriba">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <!-- ======================= SCRIPTS ======================= -->
+    <script>
+        /* ============ Utilidades matemáticas ============ */
+        function erfc(x) { // Abramowitz & Stegun 7.1.26 (|error| < 1.5e-7)
+            const z = Math.abs(x);
+            const t = 1 / (1 + 0.5 * z);
+            const ans = t * Math.exp(-z * z - 1.26551223 +
+                t * (1.00002368 +
+                t * (0.37409196 +
+                t * (0.09678418 +
+                t * (-0.18628806 +
+                t * (0.27886807 +
+                t * (-1.13520398 +
+                t * (1.48851587 +
+                t * (-0.82215223 +
+                t * 0.17087277)))))))));
+            return x >= 0 ? ans : 2 - ans;
+        }
+
+        function J0(x) { let s = 1, t = 1; for (let k = 1; k <= 60; k++) { t *= -(x * x / 4) / (k * k); s += t; } return s; }
+        function J1(x) { let s = x / 2, t = x / 2; for (let k = 1; k <= 60; k++) { t *= -(x * x / 4) / (k * (k + 1)); s += t; } return s; }
+
+        const wCache = {}, cCache = {};
+
+        // Pared plana infinita: λ tanλ = Bi ; A1 = 4 sinλ / (2λ + sin2λ)
+        function wallCoeffs(Bi) {
+            const key = Bi.toFixed(6);
+            if (wCache[key]) return wCache[key];
+            if (Bi <= 0) return { lam: 0, A: 1 };
+            let lo = 1e-8, hi = Math.PI / 2 - 1e-8;
+            for (let i = 0; i < 80; i++) { const m = (lo + hi) / 2; if (m * Math.tan(m) < Bi) lo = m; else hi = m; }
+            const lam = (lo + hi) / 2;
+            const A = 4 * Math.sin(lam) / (2 * lam + Math.sin(2 * lam));
+            return (wCache[key] = { lam, A });
+        }
+
+        // Cilindro infinito: λ J1(λ) = Bi J0(λ) ; A1 = (2/λ) J1 / (J0^2 + J1^2)
+        function cylCoeffs(Bi) {
+            const key = Bi.toFixed(6);
+            if (cCache[key]) return cCache[key];
+            if (Bi <= 0) return { lam: 0, A: 1 };
+            const f = l => l * J1(l) - Bi * J0(l);
+            let lo = 1e-8, hi = 2.40482556; // primera raíz de J0
+            for (let i = 0; i < 90; i++) { const m = (lo + hi) / 2; if (f(m) < 0) lo = m; else hi = m; }
+            const lam = (lo + hi) / 2;
+            const j0 = J0(lam), j1 = J1(lam);
+            const A = (2 / lam) * j1 / (j0 * j0 + j1 * j1);
+            return (cCache[key] = { lam, A });
+        }
+
+        function fmt(v, n) { return Number(v).toFixed(n); }
+
+        /* ============ Menús y botones generales ============ */
+        const btnMenu = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        btnMenu.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        document.querySelectorAll('#mobile-menu a').forEach(link => link.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+        const btnTop = document.getElementById('btn-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) { btnTop.classList.remove('opacity-0', 'invisible'); btnTop.classList.add('opacity-100', 'visible'); }
+            else { btnTop.classList.add('opacity-0', 'invisible'); btnTop.classList.remove('opacity-100', 'visible'); }
+        });
+        btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        /* ============ Tabla erfc ============ */
+        function generateErfcTable() {
+            const data = [
+                [0.00, "1.00000", 0.38, "0.5910", 0.76, "0.2825"], [0.02, "0.9774", 0.40, "0.5716", 0.78, "0.2700"],
+                [0.04, "0.9549", 0.42, "0.5525", 0.80, "0.2579"], [0.06, "0.9324", 0.44, "0.5338", 0.82, "0.2462"],
+                [0.08, "0.9099", 0.46, "0.5153", 0.84, "0.2349"], [0.10, "0.8875", 0.48, "0.4973", 0.86, "0.2239"],
+                [0.12, "0.8652", 0.50, "0.4795", 0.88, "0.2133"], [0.14, "0.8431", 0.52, "0.4621", 0.90, "0.2031"],
+                [0.16, "0.8210", 0.54, "0.4451", 0.92, "0.1932"], [0.18, "0.7991", 0.56, "0.4284", 0.94, "0.1837"],
+                [0.20, "0.7773", 0.58, "0.4121", 0.96, "0.1746"], [0.22, "0.7557", 0.60, "0.3961", 0.98, "0.1658"],
+                [0.24, "0.7343", 0.62, "0.3806", 1.00, "0.1573"], [0.26, "0.7131", 0.64, "0.3654", 1.02, "0.1492"],
+                [0.28, "0.6921", 0.66, "0.3506", 1.04, "0.1413"], [0.30, "0.6714", 0.68, "0.3362", 1.06, "0.1339"],
+                [0.32, "0.6509", 0.70, "0.3222", 1.08, "0.1267"], [0.34, "0.6306", 0.72, "0.3086", 1.10, "0.1198"],
+                [0.36, "0.6107", 0.74, "0.2953", 1.12, "0.1132"], [1.14, "0.10690", 1.52, "0.03159", 1.90, "0.00721"],
+                [1.16, "0.10090", 1.54, "0.02941", 1.92, "0.00662"], [1.18, "0.09516", 1.56, "0.02737", 1.94, "0.00608"],
+                [1.20, "0.08969", 1.58, "0.02545", 1.96, "0.00557"], [1.22, "0.08447", 1.60, "0.02365", 1.98, "0.00511"],
+                [1.24, "0.07950", 1.62, "0.02196", 2.00, "0.00468"], [1.26, "0.07476", 1.64, "0.02038", 2.10, "0.00298"],
+                [1.28, "0.07027", 1.66, "0.01890", 2.20, "0.00186"], [1.30, "0.06599", 1.68, "0.01751", 2.30, "0.00114"],
+                [1.32, "0.06194", 1.70, "0.01612", 2.40, "0.00069"], [1.34, "0.05809", 1.72, "0.01500", 2.50, "0.00041"],
+                [1.36, "0.05444", 1.74, "0.01387", 2.60, "0.00024"], [1.38, "0.05098", 1.76, "0.01281", 2.70, "0.00013"],
+                [1.40, "0.04772", 1.78, "0.01183", 2.80, "0.00008"], [1.42, "0.04462", 1.80, "0.01091", 2.90, "0.00004"],
+                [1.44, "0.04170", 1.82, "0.01006", 3.00, "0.00002"], [1.46, "0.03895", 1.84, "0.00926", 3.20, "0.00001"],
+                [1.48, "0.03635", 1.86, "0.00853", 3.40, "0.00000"], [1.50, "0.03390", 1.88, "0.00784", 3.60, "0.00000"]
+            ];
+            const tbody = document.getElementById('erfc-tbody');
+            if (!tbody) return;
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50 transition' : 'bg-gray-50 hover:bg-gray-100 transition';
+                row.forEach((val, i) => {
+                    const td = document.createElement('td');
+                    td.className = `px-4 py-2 font-mono ${i % 2 === 0 ? 'text-purple-600 border-r border-gray-100 font-bold' : 'text-gray-800'}`;
+                    td.textContent = (i % 2 === 0 && typeof val === 'number') ? val.toFixed(2) : val;
+                    if (i === 1 || i === 3) td.classList.add('border-r', 'border-gray-200');
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* ============ SECCIÓN I · Simulador / Calculadora ============ */
+        const SEMI = { alpha: 1e-6, Ti: 20, xMax: 0.2 };
+        let semiChart;
+
+        function semiProfile(tSec, Ts) {
+            const labels = [], temps = [], pts = [];
+            for (let x = 0; x <= SEMI.xMax + 1e-9; x += 0.005) {
+                const eta = x / Math.sqrt(4 * SEMI.alpha * tSec);
+                const T = SEMI.Ti + (Ts - SEMI.Ti) * erfc(eta);
+                labels.push((x * 100).toFixed(1));
+                temps.push(+T.toFixed(2));
+                pts.push({ x, eta, T });
+            }
+            return { labels, temps, pts };
+        }
+
+        function initSemiChart() {
+            const ctx = document.getElementById('semiChart');
+            if (!ctx) return;
+            semiChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Temperatura',
+                        data: [],
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249,115,22,0.15)',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.35
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: c => `T: ${c.parsed.y} °C`,
+                                title: c => `Profundidad: ${c[0].label} cm`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Profundidad desde la superficie (cm)', font: { weight: 'bold' } }, ticks: { maxTicksLimit: 10 } },
+                        y: { title: { display: true, text: 'Temperatura (°C)', font: { weight: 'bold' } }, min: 15, max: 105 }
+                    }
+                }
+            });
+        }
+
+        function updateSemi() {
+            const tEl = document.getElementById('semi-t'), tsEl = document.getElementById('semi-ts'), xEl = document.getElementById('semi-x');
+            if (!tEl) return;
+            const tMin = +tEl.value, Ts = +tsEl.value, xSel = +xEl.value;
+            document.getElementById('semi-t-val').textContent = tMin + ' min';
+            document.getElementById('semi-ts-val').textContent = Ts + ' °C';
+            document.getElementById('semi-x-val').textContent = fmt(xSel, 1) + ' cm';
+
+            const { labels, temps } = semiProfile(tMin * 60, Ts);
+
+            // Lecturas de la calculadora (siempre, aunque el gráfico no cargue)
+            const tSec = tMin * 60;
+            const eta = xSel / 100 / Math.sqrt(4 * SEMI.alpha * tSec);
+            const T = SEMI.Ti + (Ts - SEMI.Ti) * erfc(eta);
+            const delta = 2 * 1.386 * Math.sqrt(SEMI.alpha * tSec) * 100; // cm
+            document.getElementById('ro-Tx').textContent = fmt(T, 1) + ' °C';
+            document.getElementById('ro-eta').textContent = fmt(eta, 3);
+            document.getElementById('ro-delta').textContent = fmt(delta, 1) + ' cm';
+
+            if (semiChart) {
+                const selIdx = Math.round(xSel / 0.5); // paso del perfil = 0.005 m = 0.5 cm
+                semiChart.data.labels = labels;
+                semiChart.data.datasets[0].data = temps;
+                semiChart.data.datasets[0].pointRadius = labels.map((_, i) => i === selIdx ? 7 : 0);
+                semiChart.data.datasets[0].pointBackgroundColor = labels.map((_, i) => i === selIdx ? '#0c4a6e' : 'rgba(0,0,0,0)');
+                semiChart.options.scales.y.min = SEMI.Ti - 5;
+                semiChart.options.scales.y.max = Ts + 10;
+                semiChart.update();
+            }
+
+            document.getElementById('btn-t10').className = tMin === 10
+                ? 'px-4 py-2 bg-heat-500 text-white rounded-lg text-sm font-semibold transition'
+                : 'px-4 py-2 bg-orange-100 hover:bg-orange-200 text-heat-700 rounded-lg text-sm font-semibold transition';
+            document.getElementById('btn-t60').className = tMin === 60
+                ? 'px-4 py-2 bg-heat-500 text-white rounded-lg text-sm font-semibold transition'
+                : 'px-4 py-2 bg-orange-100 hover:bg-orange-200 text-heat-700 rounded-lg text-sm font-semibold transition';
+        }
+
+        function setSemiPreset(min) {
+            document.getElementById('semi-t').value = min;
+            updateSemi();
+        }
+
+        /* ============ SECCIÓN II · Simulador multidimensional ============ */
+        const MULTI = { k: 15, alpha: 3.9e-6, L: 0.05, ro: 0.05, Ti: 1.0 };
+        let multiChart;
+
+        function initMultiChart() {
+            const ctx = document.getElementById('multiChart');
+            if (!ctx) return;
+            multiChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: '1D · Pared infinita', data: [], borderColor: '#60a5fa', backgroundColor: 'transparent', borderWidth: 3, tension: 0.4, pointRadius: 0 },
+                        { label: '2D · Cilindro corto', data: [], borderColor: '#818cf8', backgroundColor: 'transparent', borderWidth: 3, tension: 0.4, pointRadius: 0, borderDash: [6, 4] },
+                        { label: '3D · Bloque (cubo)', data: [], borderColor: '#a855f7', backgroundColor: 'transparent', borderWidth: 3, tension: 0.4, pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 11 }, usePointStyle: true } },
+                        tooltip: { callbacks: { label: c => `${c.dataset.label}: θ = ${c.parsed.y.toFixed(3)}` } }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Tiempo (min)', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#94a3b8', maxTicksLimit: 10 }
+                        },
+                        y: {
+                            title: { display: true, text: 'Temp. adimensional θ (centro)', color: '#94a3b8' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#94a3b8' },
+                            min: 0, max: 1.02
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateMulti() {
+            const hEl = document.getElementById('multi-h');
+            if (!hEl || !multiChart) return;
+            const h = +hEl.value;
+            document.getElementById('multi-h-val').textContent = h + ' W/m²·K';
+
+            const Bi = h * MULTI.L / MULTI.k;
+            const w = wallCoeffs(Bi), c = cylCoeffs(Bi);
+            document.getElementById('ro-bi').textContent = `(Bi = ${fmt(Bi, 2)})`;
+
+            const labels = [], wallS = [], cylS = [], cubeS = [];
+            for (let tMin = 0; tMin <= 60; tMin++) {
+                const Fo = MULTI.alpha * (tMin * 60) / (MULTI.L * MULTI.L);
+                const thw = Math.min(1, w.A * Math.exp(-w.lam * w.lam * Fo));
+                const thc = Math.min(1, c.A * Math.exp(-c.lam * c.lam * Fo));
+                labels.push(tMin);
+                wallS.push(+thw.toFixed(4));
+                cylS.push(+(thw * thc).toFixed(4));
+                cubeS.push(+(Math.pow(thw, 3)).toFixed(4));
+            }
+            multiChart.data.labels = labels;
+            multiChart.data.datasets[0].data = wallS;
+            multiChart.data.datasets[1].data = cylS;
+            multiChart.data.datasets[2].data = cubeS;
+            multiChart.update();
+        }
+
+        function resetMulti() {
+            document.getElementById('multi-h').value = 150;
+            updateMulti();
+        }
+
+        /* ============ Ejemplo · Calculadora cilindro corto ============ */
+        function calcShortCylinder() {
+            const h = Math.max(1, +document.getElementById('cc-h').value || 120);
+            const tMin = Math.max(0.05, +document.getElementById('cc-t').value || 15);
+            const Tinf = +document.getElementById('cc-tinf').value || 20;
+            const k = 237, alpha = 9.71e-5, L = 0.05, ro = 0.075, Ti = 400;
+            const t = tMin * 60;
+
+            const Biw = h * L / k, Bic = h * ro / k;
+            const Fow = alpha * t / (L * L), Foc = alpha * t / (ro * ro);
+            const w = wallCoeffs(Biw), c = cylCoeffs(Bic);
+            const thw = w.A * Math.exp(-w.lam * w.lam * Fow);
+            const thc = c.A * Math.exp(-c.lam * c.lam * Foc);
+            const tht = thw * thc;
+            const T = Tinf + tht * (Ti - Tinf);
+
+            document.getElementById('cc-bi').textContent = fmt(Biw, 3) + ' / ' + fmt(Bic, 3);
+            document.getElementById('cc-thetas').textContent = fmt(thw, 3) + ' · ' + fmt(thc, 3);
+            document.getElementById('cc-thetat').textContent = fmt(tht, 3);
+            document.getElementById('cc-T').textContent = fmt(T, 1) + ' °C';
+            document.getElementById('cc-warn').classList.toggle('hidden', Fow > 0.2 && Foc > 0.2);
+        }
+
+        /* ============ ACTIVIDAD FINAL ============ */
+        const actState = { a1: { ok: false, tries: 0 }, a2: { ok: false, tries: 0 }, a3: { ok: false, tries: 0 }, a4: { ok: false, tries: 0 }, a5: { ok: false, tries: 0 } };
+
+        function parseNum(s) {
+            if (!s) return NaN;
+            return parseFloat(String(s).trim().replace(',', '.'));
+        }
+
+        function feedback(id, ok, msg) {
+            const el = document.getElementById(id + '-fb');
+            el.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border', 'border-emerald-200', 'bg-red-50', 'text-red-800', 'border', 'border-red-200');
+            if (ok) { el.classList.add('bg-emerald-50', 'border', 'border-emerald-200', 'text-emerald-800'); el.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i>' + msg; }
+            else { el.classList.add('bg-red-50', 'border', 'border-red-200', 'text-red-800'); el.innerHTML = '<i class="fa-solid fa-circle-xmark mr-1"></i>' + msg; }
+            const card = document.querySelector('.act-card[data-id="' + id + '"]');
+            card.classList.remove('act-correct', 'act-wrong');
+            card.classList.add(ok ? 'act-correct' : 'act-wrong');
+        }
+
+        function updateScore() {
+            const n = Object.values(actState).filter(s => s.ok).length;
+            document.getElementById('act-score').textContent = n;
+            document.getElementById('act-progress').style.width = (n / 5 * 100) + '%';
+            if (n === 5) document.getElementById('act-done').classList.remove('hidden');
+        }
+
+        function afterFail(id) {
+            actState[id].tries++;
+            if (actState[id].tries >= 2) document.getElementById(id + '-sol-btn').classList.remove('hidden');
+        }
+
+        function checkAct(id) {
+            if (actState[id].ok) return;
+            let ok = false, msg = '';
+
+            if (id === 'a1') {
+                const v = parseNum(document.getElementById('a1-input').value);
+                const ans = 25 + 55 * erfc(0.10 / Math.sqrt(4 * 1.5e-6 * 3600));
+                if (isNaN(v)) { feedback(id, false, 'Ingrese un valor numérico.'); return; }
+                ok = Math.abs(v - ans) <= 0.6;
+                msg = ok ? `¡Correcto! T ≈ ${fmt(ans, 1)} °C.` : 'Revisó el cálculo de η y erfc(η). Intente de nuevo.';
+            } else if (id === 'a2') {
+                const v = parseNum(document.getElementById('a2-input').value);
+                const ans = 20 + (500 / 0.8) * Math.sqrt(4 * 1e-6 * 1200 / Math.PI);
+                if (isNaN(v)) { feedback(id, false, 'Ingrese un valor numérico.'); return; }
+                ok = Math.abs(v - ans) <= 0.6;
+                msg = ok ? `¡Correcto! Ts ≈ ${fmt(ans, 1)} °C.` : 'Verifique la evaluación en x = 0 de la solución de flujo constante.';
+            } else if (id === 'a3') {
+                const v = parseNum(document.getElementById('a3-input').value);
+                const ans = 2 * 1.386 * Math.sqrt(1.2e-6 * 3600) * 100;
+                if (isNaN(v)) { feedback(id, false, 'Ingrese un valor numérico.'); return; }
+                ok = Math.abs(v - ans) <= 0.5;
+                msg = ok ? `¡Correcto! δ ≈ ${fmt(ans, 1)} cm &lt; 20 cm: el modelo semiinfinito SÍ es válido.` : 'Recuerde convertir a centímetros y usar δ = 2η√(αt).';
+            } else if (id === 'a4') {
+                const v = parseNum(document.getElementById('a4-input').value);
+                const ans = 20 + (0.60 * 0.70 * 0.50) * (300 - 20);
+                if (isNaN(v)) { feedback(id, false, 'Ingrese un valor numérico.'); return; }
+                ok = Math.abs(v - ans) <= 0.4;
+                msg = ok ? `¡Correcto! T ≈ ${fmt(ans, 1)} °C (θ_total = 0.21).` : 'Multiplique las tres θ antes de convertir a temperatura.';
+            } else if (id === 'a5') {
+                const sel = document.querySelector('input[name="a5"]:checked');
+                if (!sel) { feedback(id, false, 'Seleccione una opción.'); return; }
+                ok = sel.value === '1';
+                msg = ok ? '¡Correcto! La opción b) resume las hipótesis del teorema.' : 'No es esa. Pista: el método proviene de la separación de variables con fronteras homogéneas del mismo tipo.';
+            }
+
+            if (ok) { actState[id].ok = true; updateScore(); }
+            else afterFail(id);
+            feedback(id, ok, msg);
+        }
+
+        function toggleHint(id) {
+            const el = document.getElementById(id + '-hint');
+            el.classList.toggle('hidden');
+        }
+        function toggleSol(id) {
+            const el = document.getElementById(id + '-sol');
+            el.classList.toggle('hidden');
+        }
+
+        /* ============ Inicialización ============ */
+        window.addEventListener('load', function () {
+            generateErfcTable();
+            calcShortCylinder();
+            updateScore();
+            try { initSemiChart(); updateSemi(); } catch (e) { console.warn('Gráfico sección I no disponible:', e); }
+            try { initMultiChart(); updateMulti(); } catch (e) { console.warn('Gráfico sección II no disponible:', e); }
+        });
+    </script>
+</body>
+</html>
